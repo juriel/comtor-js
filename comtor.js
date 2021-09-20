@@ -22,9 +22,13 @@ const comtor =  {
     ,
     submitListener: function(evt){
         evt.preventDefault();
-        console.log("TEST 2");
-        console.log(evt);
-        
+        console.log(evt);   
+        console.log("Target");
+        console.log(evt.target);
+        pojo = evt.target;
+        if (evt.submitter instanceof HTMLInputElement) {
+            pojo[evt.submitter.name] = evt.submitter.value;
+        }
         return false;        
     }
 };
