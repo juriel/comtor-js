@@ -9,12 +9,12 @@ const comtor =  {
         for (const input of elements) {
             if (input.type != "submit"){
                 pojo[input.name] = input.value;
-            }
+            }        
         }
 
         selectss = node.getElementsByTagName("select");
-        for (const selects of selectss) {
-            pojo[input.name] = input.value;
+        for (const sele of selectss) {
+            pojo[sele.name] = sele.value;
         }
         texareas = node.getElementsByTagName("texarea");
         return pojo;
@@ -25,10 +25,12 @@ const comtor =  {
         console.log(evt);   
         console.log("Target");
         console.log(evt.target);
-        pojo = evt.target;
+        pojo = comtor.node2object(evt.target);
         if (evt.submitter instanceof HTMLInputElement) {
             pojo[evt.submitter.name] = evt.submitter.value;
         }
+
+        console.log(pojo);
         return false;        
     }
 };
