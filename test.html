@@ -14,19 +14,27 @@
 <body>
 
 
-    <form id="myform" action="/action_page.php">
+    <form id="myform" action="/action_page.php" ct-onsubmit on-submit-post-callback="">
         <label for="fname">First name:</label><br>
         <input type="text" id="fname" name="fname" value="John"><br><br>
 
         <label for="fname">Second name:</label><br>
-        <input type="text" id="sname" name="secondName"  value="Doe"><br><br>
+        <input type="text" id="sname" name="secondName" value="Doe"><br><br>
         <span><select name="gender">
                 <option value="M">Male</option>
                 <option value="F">Female</option>
             </select>
         </span>
-        <input type="submit" name="ok" value="OK">
+        <div>
+            <textarea name="description">
+            Esta es 
+            una bonita descripcion
+        </textarea>
+        </div>
+        <input type="submit" name="ok" value="OK"><input type="submit" name="cancel" value="Cancel">
+        
     </form>
+    <button onclick="cl();">OKI</button>
 </body>
 
 </html>
