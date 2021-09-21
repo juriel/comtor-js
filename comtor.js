@@ -58,10 +58,19 @@ const comtor = {
         }
         return resp;
     },
+    array2xFormData: function(pojo){
+        var resp = new FormData();
+        for(i = 0 ; i < pojo.length ; i += 2){
+            key = pojo[i];
+            value = pojo[i+1];
+            resp.append(key,value);
+        }
+        return resp;
+    },
     form2FormData: function(form){
         return new FormData(form);
     },
-    get_payload: function (content_type,pojo) {  /* POJO could be object or array */
+    get_payload: function (content_type,pojo) {  /* POJO could be object , array  */
 
         is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
         if (is_object && content_type === "x-www-form-urlencode"){
@@ -70,9 +79,15 @@ const comtor = {
         if (Array.isArray(pojo)   && content_type === "x-www-form-urlencode" ){
             return comtor.array2x_www_form_urlencoded(pojo);
         }
-
-
-        
+        if (is_object && content_type === "multipart/form-data"){
+            return comtor.object2xFormData(pojo);
+        }
+        if (Array.isArray(pojo) && content_type ==="multipart/form-data"){
+            return comtor.array2xFormData(pojo);
+        }
+        if ((is_object ||Array.isArray(pojo))  && content_type === "application/json"){
+            return JSON.stringify(pojo);
+        }
     },
     http_post_json: function(url,pojo, params  = {},  callback = null, error_callback){
         console.log("Step1");
