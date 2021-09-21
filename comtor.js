@@ -32,25 +32,14 @@ const comtor = {
         }
         return pojo;
     },
-    /*
-    get_response: function (xhr) {
-        ct = xhr.getResponseHeader('Content-Type');
-        if (!ct){
-            return xhr.response;
+    object2x_www_form_urlencoded = function(pojo){
+        resp = "";
+        for(var key in pojo){
+            resp = encodeURIComponent(key)+"&"+encodeURI(pojo[key]);
         }
-        if (ct == "application/json"){
-            try {
-                JSON.parse(xhr.response);
-            } catch (error) {
-                console.error(error);
-                return xhr.response;
-            }
-        }
-        else if((ct == "text/html" || ct == "text/plain"){
-            return xhr.
-        }
-    }
-*/
+        return resp;
+
+    },
     http_post_json: function(url,pojo, params  = {},  callback = null, error_callback){
         console.log("Step1");
         var client = new XMLHttpRequest();
@@ -109,7 +98,7 @@ const comtor = {
         }
     },
 
-    xhr: function(url,pojo,xhrparams = {}){
+    xhr: function(url,pojo = null,xhrparams = {}){
         is_null = pojo === null;
         is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
         is_string = typeof pojo === 'string' || pojo instanceof String;
@@ -183,12 +172,28 @@ const comtor = {
         if (xhrparams.withCredentials){
             client.withCredentials = xhrparams.withCredentials;
         }
-        if (xhrparams.content_type == "application/json" && is_object && default_method != "GET"){
+        if (content_type == "application/json" && (is_object || Array.isArray(pojo)) && default_method != "GET"){
             client.open(default_method, url);
             client.setRequestHeader("Content-Type", content_type);
             client.send(JSON.stringify(pojo));
         }
-        else if (xhrparams.content_type == "application/json" && is_null){
+        else if (content_type === "application/x-www-form-urlencoded" && default_method === "POST" ){
+            payload = "";
+
+
+        }
+
+
+
+
+        else if (is_null){
+            client.open(default_method, url);
+            client.setRequestHeader("Content-Type", content_type);
+        }
+        else if (default_method == "GET" || Array.isArray(pojo)){
+
+        }
+        else {
             client.open(default_method, url);
             client.setRequestHeader("Content-Type", content_type);
         }
