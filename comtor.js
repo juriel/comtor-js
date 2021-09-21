@@ -254,8 +254,6 @@ const comtor = {
         if (form.enctype){
             xhrparams.content_type = form.enctype;
         }
-
-
         return false;
     }
 };
