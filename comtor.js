@@ -239,14 +239,23 @@ const comtor = {
     },
     
     formSubmitListener: function (evt) {
-        evt.preventDefault();
-        
+        evt.preventDefault(); // Evita que el navegador envíe el formulario
         console.log(evt.target);
-        pojo = comtor.node2object(evt.target);
+        form  = evt.target;
+        pojo = comtor.node2object(form);
         if (evt.submitter instanceof HTMLInputElement) {
             pojo[evt.submitter.name] = evt.submitter.value;
         }
-        console.log(pojo);
+        //console.log(pojo);
+        xhrparams = {};
+        if (form.method){
+            xhrparams.method = form.method;
+        }
+        if (form.enctype){
+            xhrparams.content_type = form.enctype;
+        }
+
+
         return false;
     }
 };
