@@ -131,8 +131,6 @@ const comtor = {
         client.onloadend = handler;
         client.open("POST", url);
         client.setRequestHeader("Content-Type", "application/json");
-
-
         if (params.headers){
             for (i = 0; i < params.headers.length ; i = i +2){
                 client.setRequestHeader(params.headers[i],params.headers[i+1]);
@@ -152,16 +150,16 @@ const comtor = {
         is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
         is_string = typeof pojo === 'string' || pojo instanceof String;
         default_method = "POST";
-        if (!xhrparams.content_type){
+        if(xhrparams.content_type){
+            content_type = xhrparams.content_type;
+        }
+        else{ /* select best encoding depending pojo type */
             if (is_object || Array.isArray(pojo)){  
                 content_type = "application/json";
             }
             else if (is_string){
                 content_type = "text/plain";
             }            
-        }
-        else {
-            content_type = xhrparams.content_type;
         }
 
         var client = new XMLHttpRequest();
@@ -221,32 +219,13 @@ const comtor = {
         if (xhrparams.withCredentials){
             client.withCredentials = xhrparams.withCredentials;
         }
-        if (content_type == "application/json" && (is_object || Array.isArray(pojo)) && default_method != "GET"){
-            client.open(default_method, url);
-            client.setRequestHeader("Content-Type", content_type);
-            client.send(JSON.stringify(pojo));
+
+        client.open(default_method, url);
+        client.setRequestHeader("Content-Type", content_type);
+        
+        if (default_method === "GET" && !is_null){
+            client.send(comtor.get_payload(content_type, pojo));
         }
-        else if (content_type === "application/x-www-form-urlencoded" && default_method === "POST" ){
-            payload = "";
-
-
-        }
-
-
-
-
-        else if (is_null){
-            client.open(default_method, url);
-            client.setRequestHeader("Content-Type", content_type);
-        }
-        else if (default_method == "GET" || Array.isArray(pojo)){
-
-        }
-        else {
-            client.open(default_method, url);
-            client.setRequestHeader("Content-Type", content_type);
-        }
-
         return client;
     },
     
