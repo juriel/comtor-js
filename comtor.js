@@ -35,7 +35,7 @@ const comtor = {
     object2x_www_form_urlencoded : function(pojo){
         resp = "";
         for(var key in pojo){
-            resp = encodeURIComponent(key)+"&"+encodeURIComponent(pojo[key]);
+            resp += encodeURIComponent(key)+"="+encodeURIComponent(pojo[key])+"&";
         }
         return resp;
 
@@ -46,7 +46,7 @@ const comtor = {
         for(i = 0 ; i < pojo.length ; i += 2){
             key = pojo[i];
             value = pojo[i+1];
-            resp = encodeURIComponent(key)+"&"+encodeURIComponent(value);
+            resp += encodeURIComponent(key)+"="+encodeURIComponent(value)+"&";
         }
         return resp;
 
@@ -88,6 +88,7 @@ const comtor = {
         if ((is_object ||Array.isArray(pojo))  && content_type === "application/json"){
             return JSON.stringify(pojo);
         }
+        return "PAILA +++ "+content_type+"  ";
     },
     http_post_json: function(url,pojo, params  = {},  callback = null, error_callback){
         console.log("Step1");
@@ -146,10 +147,14 @@ const comtor = {
     },
 
     xhr: function(url,pojo = null,xhrparams = {}){
+        console.log("XHR Step 1");
         is_null = pojo === null;
         is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
         is_string = typeof pojo === 'string' || pojo instanceof String;
         default_method = "POST";
+        if (xhrparams.method){
+            default_method = xhrparams.method;
+        }
         if(xhrparams.content_type){
             content_type = xhrparams.content_type;
         }
@@ -162,8 +167,9 @@ const comtor = {
             }            
         }
 
-        var client = new XMLHttpRequest();
-        
+
+        console.log("XHR Step 2 "+content_type+" "+default_method);
+        var client = new XMLHttpRequest();        
         onloadend_handler = function(){
             console.log("Handler");
             if (this.status == 200) {
@@ -202,9 +208,7 @@ const comtor = {
         };
         
         client.onloadend = onloadend_handler;
-        if (!xhrparams.method){
-            default_method = xhrparams.method;            
-        }
+       
         if (xhrparams.headers){
             for (i = 0; i < params.headers.length ; i = i +2){
                 client.setRequestHeader(params.headers[i],params.headers[i+1]);
@@ -219,12 +223,17 @@ const comtor = {
         if (xhrparams.withCredentials){
             client.withCredentials = xhrparams.withCredentials;
         }
-
+        console.log("XHR Step 3 open ");
         client.open(default_method, url);
         client.setRequestHeader("Content-Type", content_type);
         
         if (default_method === "GET" && !is_null){
             client.send(comtor.get_payload(content_type, pojo));
+        }
+        else {
+            console.log("XHR Step 4 open ");
+            console.log(comtor.get_payload(content_type,pojo));
+            client.send(comtor.get_payload(content_type,pojo));
         }
         return client;
     },
@@ -242,16 +251,31 @@ const comtor = {
     }
 };
 
+
+
+function send_ok(resp){
+
+    console.log("SEND OK");
+    console.log(resp);
+}
+
 function test_any (){
     //console.log("TEST");
     //ejemplo = {perro:'San Bernardo',mama: 'TEst'};
     //console.log(ejemplo);
     //comtor.http_post_json('https://jsonplaceholder.typicode.com/posts/1',ejemplo, {headers: ["header1","valye"]} ,function (response) {console.log(response)}, function (){console.log("esto saliio muy mal")}  );
     //comtor.xhr('https://jsonplaceholder.typicode.com/posts/1',ejemplo,{timeout:1    , ontimeout: function(resultado){console.log("PAILA"); console.log(resultado);}    });
+    console.log("NODE 2 OBJECT ");
     obj = comtor.node2object(document.getElementById("myform"));
     console.log(obj);
 
-    formdata = comtor.form2FormData(document.getElementById("myform"));
+    console.log(" OBJECT 2 x_www_form_urlencoded");
+    str = comtor.object2x_www_form_urlencoded(obj);
+    console.log(str);
+
+    console.log("TEST XHR");
+    comtor.xhr("https://jsonplaceholder.typicode.com/posts/1",obj,{timeout:30000, callback: send_ok, method: "PUT" });
+  //  formdata = comtor.form2FormData(document.getElementById("myform"));
   //  console.log("FORM _DATA");
   //  console.log(formdata);
 }
