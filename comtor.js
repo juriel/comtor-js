@@ -242,7 +242,7 @@ const comtor = {
     }
 };
 
-function cl (){
+function test_any (){
     //console.log("TEST");
     //ejemplo = {perro:'San Bernardo',mama: 'TEst'};
     //console.log(ejemplo);
@@ -252,8 +252,8 @@ function cl (){
     console.log(obj);
 
     formdata = comtor.form2FormData(document.getElementById("myform"));
-    console.log("FORM _DATA");
-    console.log(formdata);
+  //  console.log("FORM _DATA");
+  //  console.log(formdata);
 }
 
 window.onload = function () {
