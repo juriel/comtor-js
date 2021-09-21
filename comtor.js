@@ -32,13 +32,47 @@ const comtor = {
         }
         return pojo;
     },
-    object2x_www_form_urlencoded = function(pojo){
+    object2x_www_form_urlencoded : function(pojo){
         resp = "";
         for(var key in pojo){
-            resp = encodeURIComponent(key)+"&"+encodeURI(pojo[key]);
+            resp = encodeURIComponent(key)+"&"+encodeURIComponent(pojo[key]);
         }
         return resp;
 
+    },
+    array2x_www_form_urlencoded : function(pojo){
+        resp = "";
+        
+        for(i = 0 ; i < pojo.length ; i += 2){
+            key = pojo[i];
+            value = pojo[i+1];
+            resp = encodeURIComponent(key)+"&"+encodeURIComponent(value);
+        }
+        return resp;
+
+    },
+    object2xFormData: function(pojo){
+        var resp = new FormData();
+        for (var key in pojo){
+            resp.append(key,pojo[key]);
+        }
+        return resp;
+    },
+    form2FormData: function(form){
+        return new FormData(form);
+    },
+    get_payload: function (content_type,pojo) {  /* POJO could be object or array */
+
+        is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
+        if (is_object && content_type === "x-www-form-urlencode"){
+            return comtor.object2x_www_form_urlencoded(pojo);
+        }
+        if (Array.isArray(pojo)   && content_type === "x-www-form-urlencode" ){
+            return comtor.array2x_www_form_urlencoded(pojo);
+        }
+
+
+        
     },
     http_post_json: function(url,pojo, params  = {},  callback = null, error_callback){
         console.log("Step1");
@@ -215,11 +249,17 @@ const comtor = {
 };
 
 function cl (){
-    console.log("TEST");
-    ejemplo = {perro:'San Bernardo',mama: 'TEst'};
-    console.log(ejemplo);
+    //console.log("TEST");
+    //ejemplo = {perro:'San Bernardo',mama: 'TEst'};
+    //console.log(ejemplo);
     //comtor.http_post_json('https://jsonplaceholder.typicode.com/posts/1',ejemplo, {headers: ["header1","valye"]} ,function (response) {console.log(response)}, function (){console.log("esto saliio muy mal")}  );
-    comtor.xhr('https://jsonplaceholder.typicode.com/posts/1',ejemplo,{timeout:1    , ontimeout: function(resultado){console.log("PAILA"); console.log(resultado);}    });
+    //comtor.xhr('https://jsonplaceholder.typicode.com/posts/1',ejemplo,{timeout:1    , ontimeout: function(resultado){console.log("PAILA"); console.log(resultado);}    });
+    obj = comtor.node2object(document.getElementById("myform"));
+    console.log(obj);
+
+    formdata = comtor.form2FormData(document.getElementById("myform"));
+    console.log("FORM _DATA");
+    console.log(formdata);
 }
 
 window.onload = function () {
