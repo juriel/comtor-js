@@ -248,9 +248,6 @@ const comtor = {
     
     onSubmitDefaultListener: function (evt) {
         evt.preventDefault(); // Evita que el navegador envíe el formulario
-
-        
-
         //console.log(evt.target);
         form  = evt.target;
         onsubmitpre = form.getAttribute("comtor-onsubmit-pre");
@@ -313,5 +310,20 @@ const comtor = {
         }
         comtor.xhr(url,pojo,xhrparams);
         return false;
-    }
+    },
+    init : function(){
+
+    } 
 };
+document.addEventListener("DOMContentLoaded", function(event) { 
+    const all_nodes = document.querySelectorAll("form");
+    all_nodes.forEach(
+        function(node){
+            attr = node.getAttribute("comtor-onsubmit");
+            if (attr){
+                node.addEventListener("submit", comtor.onSubmitDefaultListener);
+            }
+        }
+    );
+
+});

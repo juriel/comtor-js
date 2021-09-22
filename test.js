@@ -39,7 +39,7 @@ function test_any (param){
   //  console.log("FORM _DATA");
   //  console.log(formdata);
 }
-
+/*
 window.onload = function () {
     document.getElementById("myform").addEventListener("submit", comtor.onSubmitDefaultListener);
-}
+}*/
