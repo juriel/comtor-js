@@ -9,12 +9,20 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="comtor.js"></script>
+  <script src="test.js"></script>
 </head>
 <body>
 
 <div class="container">
   <h1>ComtorJS Test</h1>
-  <form action="https://jsonplaceholder.typicode.com/posts/1" method="PUT"  enctype="multipart/form-data" comtor-enctype="application/json" id="myform"> 
+  <form id="myform" action="https://jsonplaceholder.typicode.com/posts/1" method="PUT"  enctype="multipart/form-data" 
+  comtor-enctype="application/json" 
+  comtor-onsubmit="default"
+  comtor-onsubmit-post-ok="send_ok"
+  comtor-onsubmit-post-error="send_fail"
+  comtor-onsubmit-pre="prepare"
+  
+  > 
     <div class="form-group">
         <label for="name">Name:</label>
         <input type="text" class="form-control" id="name" placeholder="Fullname" name="fullname">
@@ -32,7 +40,7 @@
         <input class="form-check-input" type="checkbox" name="remember"> Remember me
       </label>
     </div>
-    <button type="submit" class="btn btn-primary" onsubmit="test_any();">TEST_ANY</button>
+    <button type="submit" class="btn btn-primary" onclick="test_any(this);">TEST_ANY</button>
     <button type="submit" class="btn btn-primary" >Submit</button>
   </form>
 </div>
