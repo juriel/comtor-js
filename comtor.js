@@ -32,6 +32,16 @@ const comtor = {
         }
         return pojo;
     },
+    getfunctionByName: function (functionName){
+        var namespaces = functionName.split(".");
+        var func = namespaces.pop();
+        context = window;
+        for(var i = 0; i < namespaces.length; i++) {
+          context = context[namespaces[i]];
+        }
+        return context[func];
+    },
+
     object2x_www_form_urlencoded : function(pojo){
         resp = "";
         for(var key in pojo){
@@ -172,7 +182,6 @@ const comtor = {
         onloadend_handler = function(){
             console.log("Handler");
             if (this.status == 200) {
-
                 if (xhrparams.callback == null){
                     return;
                 }
@@ -237,10 +246,19 @@ const comtor = {
         return client;
     },
     
-    formSubmitListener: function (evt) {
+    onSubmitDefaultListener: function (evt) {
         evt.preventDefault(); // Evita que el navegador envíe el formulario
-        console.log(evt.target);
+
+        
+
+        //console.log(evt.target);
         form  = evt.target;
+        onsubmitpre = form.getAttribute("comtor-onsubmit-pre");
+        if (onsubmitpre){
+            onsubmitpre_fn = comtor.getfunctionByName(onsubmitpre);
+            onsubmitpre_fn(evt);
+        }
+
         pojo = comtor.node2object(form);
         if (evt.submitter instanceof HTMLInputElement) {
             pojo[evt.submitter.name] = evt.submitter.value;
@@ -270,6 +288,18 @@ const comtor = {
             console.log("ENCTYPE2 "+form.enctype );
             xhrparams.content_type = form.enctype;
         }
+
+        onsubmitpost_ok = form.getAttribute("comtor-onsubmit-post-ok");
+        onsubmitpost_ok_fn = null;
+        if (onsubmitpost_ok){
+            xhrparams.callback = comtor.getfunctionByName(onsubmitpost_ok);            
+        }
+
+        onsubmitpost_error = form.getAttribute("comtor-onsubmit-post-error");
+        onsubmitpost_error_fn = null;
+        if (onsubmitpost_error){
+            xhrparams.error_callback = comtor.getfunctionByName(onsubmitpost_error);            
+        }
         url = null;
         if (form.action){
             url = form.action;
@@ -285,36 +315,3 @@ const comtor = {
         return false;
     }
 };
-
-
-
-function send_ok(resp){
-
-    console.log("SEND OK");
-    console.log(resp);
-}
-
-function test_any (){
-    //console.log("TEST");
-    //ejemplo = {perro:'San Bernardo',mama: 'TEst'};
-    //console.log(ejemplo);
-    //comtor.http_post_json('https://jsonplaceholder.typicode.com/posts/1',ejemplo, {headers: ["header1","valye"]} ,function (response) {console.log(response)}, function (){console.log("esto saliio muy mal")}  );
-    //comtor.xhr('https://jsonplaceholder.typicode.com/posts/1',ejemplo,{timeout:1    , ontimeout: function(resultado){console.log("PAILA"); console.log(resultado);}    });
-    console.log("NODE 2 OBJECT ");
-    obj = comtor.node2object(document.getElementById("myform"));
-    console.log(obj);
-
-    console.log(" OBJECT 2 x_www_form_urlencoded");
-    str = comtor.object2x_www_form_urlencoded(obj);
-    console.log(str);
-
-    console.log("TEST XHR");
-    comtor.xhr("https://jsonplaceholder.typicode.com/posts/1",obj,{timeout:30000, callback: send_ok, method: "PUT" });
-  //  formdata = comtor.form2FormData(document.getElementById("myform"));
-  //  console.log("FORM _DATA");
-  //  console.log(formdata);
-}
-
-window.onload = function () {
-    document.getElementById("myform").addEventListener("submit", comtor.formSubmitListener);
-}
