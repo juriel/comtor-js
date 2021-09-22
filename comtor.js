@@ -2,7 +2,7 @@ const comtor = {
     hello: function () {
         console.log("Hello World");
     },
-    node2object: function (node) {
+    node2object: function (node) {  /*Extract from inputs, selects and textareas values to create a object */
         pojo = {};
         elements = [];
         inputs = node.getElementsByTagName("input");
