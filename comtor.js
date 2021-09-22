@@ -38,7 +38,6 @@ const comtor = {
             resp += encodeURIComponent(key)+"="+encodeURIComponent(pojo[key])+"&";
         }
         return resp;
-
     },
     array2x_www_form_urlencoded : function(pojo){
         resp = "";
@@ -76,7 +75,7 @@ const comtor = {
         if (is_object && content_type === "x-www-form-urlencode"){
             return comtor.object2x_www_form_urlencoded(pojo);
         }
-        if (Array.isArray(pojo)   && content_type === "x-www-form-urlencode" ){
+        if (Array.isArray(pojo)   && content_type === "x-www-form-urlencoded" ){
             return comtor.array2x_www_form_urlencoded(pojo);
         }
         if (is_object && content_type === "multipart/form-data"){
@@ -88,13 +87,13 @@ const comtor = {
         if ((is_object ||Array.isArray(pojo))  && content_type === "application/json"){
             return JSON.stringify(pojo);
         }
-        return "PAILA +++ "+content_type+"  ";
+        return "get_payload error  "+content_type+"  "+pojo;
     },
     http_post_json: function(url,pojo, params  = {},  callback = null, error_callback){
         console.log("Step1");
         var client = new XMLHttpRequest();
         handler = function(){
-            console.log("Handler");
+            console.log("http_post_json handler");
             if (callback == null){
                 return;
             }
@@ -254,6 +253,18 @@ const comtor = {
         if (form.enctype){
             xhrparams.content_type = form.enctype;
         }
+        url = null;
+        if (form.action){
+            url = form.action;
+        }
+        pojo = null;
+        if (xhrparams.content_type && xhrparams.content_type === "application/x-www-form-urlencoded"){
+            pojo = new FormData(form);
+        }
+        else {
+            pojo = comtor.node2object(form);
+        }
+        comtor.xhr(url,pojo,xhrparams);
         return false;
     }
 };
