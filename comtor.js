@@ -230,7 +230,7 @@ const comtor = {
             client.send(comtor.get_payload(content_type, pojo));
         }
         else {
-            console.log("XHR Step 4 open ");
+            console.log("XHR Step 4 open "+content_type+" "+pojo);
             console.log(comtor.get_payload(content_type,pojo));
             client.send(comtor.get_payload(content_type,pojo));
         }
@@ -245,12 +245,29 @@ const comtor = {
         if (evt.submitter instanceof HTMLInputElement) {
             pojo[evt.submitter.name] = evt.submitter.value;
         }
+
+        if (form.hasAttributes()) {
+            var attrs = form.attributes;
+            var output = "";
+            for(var i = attrs.length - 1; i >= 0; i--) {
+              output += attrs[i].name + "->" + attrs[i].value+"\n";
+            }
+            console.log(output);
+          } else {
+            console.log("No attributes to show");
+          }
+        
         //console.log(pojo);
         xhrparams = {};
         if (form.method){
             xhrparams.method = form.method;
         }
-        if (form.enctype){
+        if (form.getAttribute("comtor-enctype")){
+            console.log("ENCTYPE1 "+form.getAttribute("comtor-enctype") );
+            xhrparams.content_type = form.getAttribute("comtor-enctype");
+        }
+        else if (form.enctype) {
+            console.log("ENCTYPE2 "+form.enctype );
             xhrparams.content_type = form.enctype;
         }
         url = null;
