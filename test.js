@@ -7,6 +7,7 @@ function prepare(evt){
 function pre(evt, pojo,xhrparams){
     console.log("PRE "+pojo.fullname );
     pojo.fullname  =  pojo.fullname.toUpperCase();
+    xhrparams.method = "PUT";
     return pojo;
 }
 
@@ -15,6 +16,12 @@ function send_ok(resp){
     console.log("SEND OK");
     console.log(resp);
 }
+
+
+function send_fail(error){
+    console.log("esta vaina Fallo "+error);
+}
+
 
 function test_any (param){
     //console.log("TEST");

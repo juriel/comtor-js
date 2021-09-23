@@ -309,7 +309,15 @@ const comtor = {
         return false;
     },
     init : function(){
-
+        const all_nodes = document.querySelectorAll("form");
+        all_nodes.forEach(
+            function(node){
+                attr = node.getAttribute("comtor-onsubmit");
+                if (attr){
+                    node.addEventListener("submit", comtor.onSubmitDefaultListener);
+                }
+            }
+        );
     } 
 };
 document.addEventListener("DOMContentLoaded", function(event) { 
