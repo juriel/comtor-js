@@ -2,6 +2,27 @@ const comtor = {
     hello: function () {
         console.log("Hello World");
     },
+    function_invoke: function(func, params){
+        if (!func){
+            return;
+        }
+        if (func.length == 0 ){
+            func();
+        }
+        else if (func.length ==1 ){
+            func(params[0]);
+        }
+        else if (func.length ==2 ){
+            func(params[0],params[1]);
+        }
+        else if (func.length == 3){
+            func(params[0],params[1],params[2]);
+        }
+        else if (func.length == 4){
+            func(params[0],params[1],params[2],params[3]);
+        }
+
+    },
     node2object: function (node) {  /*Extract from inputs, selects and textareas values to create a object */
         pojo = {};
         elements = [];
@@ -100,38 +121,20 @@ const comtor = {
         return "get_payload error  "+content_type+"  "+pojo;
     },
     http_post_json: function(url,pojo, params  = {},  callback = null, error_callback){
-        console.log("Step1");
+        //console.log("Step1");
         var client = new XMLHttpRequest();
         handler = function(){
-            console.log("http_post_json handler");
-            if (callback == null){
-                return;
-            }
+            //console.log("http_post_json handler");
+            
             if (this.status == 200) {
-                if (callback.length == 0){
-                    callback();
+                if (callback){
+                    comtor.function_invoke(callback,[this.response,this]);
                 }
-                else if (callback.length == 1){
-                    callback(this.response);
-                }
-                else if (callback.length == 2){
-                    callback(this.response, this);
-                }
+               
             } else {
                 if (error_callback ) {
-                    if (error_callback.length == 0){
-                        error_callback();
-                    }
-                    else if (error_callback.length == 1){
-                        error_callback(this.status);
-                    }
-                    else if (error_callback.length == 2){
-                        error_callback(this.status, this.response);
-                    }
-                    else if (error_callback.length == 3){
-                        error_callback(this.status, this.response,this);
-                    }
-                }    
+                    comtor.function_invoke(error_callback,[this.status,this.response,this]);
+                }
                 else{
                     console.log("comtor.http_post_json "+url +" " +this.status);
                 }
@@ -144,9 +147,9 @@ const comtor = {
         if (params.headers){
             for (i = 0; i < params.headers.length ; i = i +2){
                 client.setRequestHeader(params.headers[i],params.headers[i+1]);
-                console.log("ADD HEADER "+params.headers[i]+":"+params.headers[i+1]);
+                //console.log("ADD HEADER "+params.headers[i]+":"+params.headers[i+1]);
             }
-            console.log("contains headers");    
+            //console.log("contains headers");    
         }
         try{
             client.send(JSON.stringify(pojo));
@@ -155,8 +158,19 @@ const comtor = {
         }
     },
 
-    xhr: function(url,pojo = null,xhrparams = {}){
-        console.log("XHR Step 1");
+    xhr: function(url,pojo = null,xhrparams = {}, evt=null){
+        console.log("============ XHR =============");
+        console.log(url);
+        console.log(pojo);
+        console.log(xhrparams);
+        console.log("------------------------------");
+        if (xhrparams.function_pre){
+            pre_pojo = comtor.function_invoke(xhrparams.function_pre,[evt,pojo,xhrparams]);
+            if (pre_pojo){
+                pojo  = pre_pojo;
+            }
+        }
+        //console.log("XHR Step 1");
         is_null = pojo === null;
         is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
         is_string = typeof pojo === 'string' || pojo instanceof String;
@@ -175,48 +189,23 @@ const comtor = {
                 content_type = "text/plain";
             }            
         }
-
-
-        console.log("XHR Step 2 "+content_type+" "+default_method);
+        //console.log("XHR Step 2 "+content_type+" "+default_method);
         var client = new XMLHttpRequest();        
         onloadend_handler = function(){
-            console.log("Handler");
+            //console.log("Handler");
             if (this.status == 200) {
-                if (xhrparams.callback == null){
-                    return;
-                }
-                else if (xhrparams.callback.length == 0){
-                    xhrparams.callback();
-                }
-                else if (xhrparams.callback.length == 1){
-                    xhrparams.callback(this.response);
-                }
-                else if (xhrparams.callback.length == 2){
-                    xhrparams.callback(this.response, this);
+                if (xhrparams.function_post){
+                    comtor.function_invoke(xhrparams.function_post,[this.response,this]);
                 }
             } 
             else { // status != 200
-                if (!xhrparams.error_callback ) {
-                    console.log("xhr "+url +" " +this.status);
+                if (xhrparams.function_post_error ) {
+                    comtor.function_invoke(xhrparams.function_post_error,[this.status, this.response,this]);
                     return;
-                }
-                else if (xhrparams.error_callback.length == 0){
-                    xhrparams.error_callback();
-                }
-                else if (xhrparams.error_callback.length == 1){
-                    xhrparams.error_callback(this.status);
-                }
-                else if (xhrparams.error_callback.length == 2){
-                    xhrparams.error_callback(this.status, this.response);
-                }
-                else if (xhrparams.error_callback.length == 3){
-                    error_callback(this.status, this.response,this);
-                }
+                }                
             }    
-        };
-        
+        };        
         client.onloadend = onloadend_handler;
-       
         if (xhrparams.headers){
             for (i = 0; i < params.headers.length ; i = i +2){
                 client.setRequestHeader(params.headers[i],params.headers[i+1]);
@@ -231,16 +220,18 @@ const comtor = {
         if (xhrparams.withCredentials){
             client.withCredentials = xhrparams.withCredentials;
         }
-        console.log("XHR Step 3 open ");
+       // console.log("XHR Step 3 open ");
         client.open(default_method, url);
         client.setRequestHeader("Content-Type", content_type);
         
-        if (default_method === "GET" && !is_null){
+        
+        if (default_method === "GET" && !is_null){            
             client.send(comtor.get_payload(content_type, pojo));
         }
         else {
-            console.log("XHR Step 4 open "+content_type+" "+pojo);
-            console.log(comtor.get_payload(content_type,pojo));
+            //console.log("XHR Step 4 open "+content_type+" "+pojo);
+           // console.log(comtor.get_payload(content_type,pojo));
+            
             client.send(comtor.get_payload(content_type,pojo));
         }
         return client;
@@ -250,52 +241,58 @@ const comtor = {
         evt.preventDefault(); // Evita que el navegador envíe el formulario
         //console.log(evt.target);
         form  = evt.target;
-        onsubmitpre = form.getAttribute("comtor-onsubmit-pre");
-        if (onsubmitpre){
-            onsubmitpre_fn = comtor.getfunctionByName(onsubmitpre);
-            onsubmitpre_fn(evt);
+        onsubmitprepare = form.getAttribute("comtor-onsubmit-prepare");
+        if (onsubmitprepare){
+            onsubmitprepare_fn = comtor.getfunctionByName(onsubmitprepare);
+            onsubmitprepare_fn(evt);
         }
 
         pojo = comtor.node2object(form);
+    
         if (evt.submitter instanceof HTMLInputElement) {
             pojo[evt.submitter.name] = evt.submitter.value;
         }
-
+/*
         if (form.hasAttributes()) {
             var attrs = form.attributes;
             var output = "";
             for(var i = attrs.length - 1; i >= 0; i--) {
               output += attrs[i].name + "->" + attrs[i].value+"\n";
             }
-            console.log(output);
+            //console.log(output);
           } else {
             console.log("No attributes to show");
           }
-        
+*/       
         //console.log(pojo);
         xhrparams = {};
+        console.log("METHOD "+form.method);
         if (form.method){
             xhrparams.method = form.method;
         }
         if (form.getAttribute("comtor-enctype")){
-            console.log("ENCTYPE1 "+form.getAttribute("comtor-enctype") );
+            //console.log("ENCTYPE1 "+form.getAttribute("comtor-enctype") );
             xhrparams.content_type = form.getAttribute("comtor-enctype");
         }
         else if (form.enctype) {
-            console.log("ENCTYPE2 "+form.enctype );
+            //console.log("ENCTYPE2 "+form.enctype );
             xhrparams.content_type = form.enctype;
         }
 
+        onsubmitpre = form.getAttribute("comtor-onsubmit-pre");
+        if (onsubmitpre){
+            xhrparams.function_pre = comtor.getfunctionByName(onsubmitpre);            
+        }
+
+
         onsubmitpost_ok = form.getAttribute("comtor-onsubmit-post-ok");
-        onsubmitpost_ok_fn = null;
         if (onsubmitpost_ok){
-            xhrparams.callback = comtor.getfunctionByName(onsubmitpost_ok);            
+            xhrparams.function_post = comtor.getfunctionByName(onsubmitpost_ok);            
         }
 
         onsubmitpost_error = form.getAttribute("comtor-onsubmit-post-error");
-        onsubmitpost_error_fn = null;
         if (onsubmitpost_error){
-            xhrparams.error_callback = comtor.getfunctionByName(onsubmitpost_error);            
+            xhrparams.function_post_error = comtor.getfunctionByName(onsubmitpost_error);            
         }
         url = null;
         if (form.action){
@@ -308,7 +305,7 @@ const comtor = {
         else {
             pojo = comtor.node2object(form);
         }
-        comtor.xhr(url,pojo,xhrparams);
+        comtor.xhr(url,pojo,xhrparams,evt);
         return false;
     },
     init : function(){

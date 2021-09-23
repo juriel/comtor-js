@@ -3,6 +3,13 @@ function prepare(evt){
     console.log("Prepare");
     console.log(evt.type);
 }
+
+function pre(evt, pojo,xhrparams){
+    console.log("PRE "+pojo.fullname );
+    pojo.fullname  =  pojo.fullname.toUpperCase();
+    return pojo;
+}
+
 function send_ok(resp){
 
     console.log("SEND OK");
