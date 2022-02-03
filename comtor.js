@@ -11,27 +11,31 @@ const comtor = {
             return;
         }
         if (func.length == 0 ){
-            func();
+            return func();
         }
         else if (func.length ==1 ){
-            func(params[0]);
+            return func(params[0]);
         }
         else if (func.length ==2 ){
-            func(params[0],params[1]);
+            return func(params[0],params[1]);
         }
         else if (func.length == 3){
-            func(params[0],params[1],params[2]);
+            return func(params[0],params[1],params[2]);
         }
         else if (func.length == 4){
-            func(params[0],params[1],params[2],params[3]);
+            return func(params[0],params[1],params[2],params[3]);
         }
 
     },
-    node2object: function (node) {  /*Extract from inputs, selects and textareas values to create a object */
-        pojo = {};
+    /*
+    Extract from inputs, selects and textareas values to create a object 
+    node:  node is DOM element
+    */
+    node2object: function (node) {  
+        pojo     = {};
         elements = [];
-        inputs = node.getElementsByTagName("input");
-        selects = node.getElementsByTagName("select");
+        inputs   = node.getElementsByTagName("input");
+        selects  = node.getElementsByTagName("select");
         texareas = node.getElementsByTagName("textarea");
         for (const ele of inputs) {
             elements.push(ele);
@@ -57,6 +61,9 @@ const comtor = {
         }
         return pojo;
     },
+    /*
+    Receives a function name and returns a pointer to this function
+    */
     getfunctionByName: function (functionName){
         var namespaces = functionName.split(".");
         var func = namespaces.pop();
@@ -66,24 +73,24 @@ const comtor = {
         }
         return context[func];
     },
+    encodeURIComponent2: function(str){
+        return encodeURIComponent(str).replace(/%20/g,'+');
+    },
     object2x_www_form_urlencoded : function(pojo){
         resp = "";
         for(var key in pojo){
-            resp += encodeURIComponent(key)+"="+encodeURIComponent(pojo[key])+"&";
+            resp += (resp?'&':'') + comtor.encodeURIComponent2(key)+"="+comtor.encodeURIComponent2(pojo[key])+"&";
         }
         return resp;
     },
-    formdata2x_www_form_urlencoded : function(fd){
-
-
-        var s = '';
-        function encode(s){ return encodeURIComponent(s).replace(/%20/g,'+'); }
-        for(var pair of fd.entries()){
+    formdata2x_www_form_urlencoded : function(formData){
+        var resp  = '';
+        for(var pair of formData.entries()){
             if(typeof pair[1]=='string'){
-               s += (s?'&':'') + encode(pair[0])+'='+encode(pair[1]);
+               resp += (resp?'&':'') + comtor.encodeURIComponent2(pair[0])+'='+comtor.encodeURIComponent2(pair[1]);
             }
         }
-        return s;
+        return resp;
     },
     array2x_www_form_urlencoded : function(pojo){
         resp = "";
