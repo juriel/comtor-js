@@ -1,6 +1,10 @@
 const comtor = {
+    ENABLE_LOGS  = false,
     hello: function () {
         console.log("Hello World");
+    },
+    log function(o){
+		console.log(o);
     },
     function_invoke: function(func, params){
         if (!func){
@@ -62,13 +66,24 @@ const comtor = {
         }
         return context[func];
     },
-
     object2x_www_form_urlencoded : function(pojo){
         resp = "";
         for(var key in pojo){
             resp += encodeURIComponent(key)+"="+encodeURIComponent(pojo[key])+"&";
         }
         return resp;
+    },
+    formdata2x_www_form_urlencoded : function(fd){
+
+
+        var s = '';
+        function encode(s){ return encodeURIComponent(s).replace(/%20/g,'+'); }
+        for(var pair of fd.entries()){
+            if(typeof pair[1]=='string'){
+               s += (s?'&':'') + encode(pair[0])+'='+encode(pair[1]);
+            }
+        }
+        return s;
     },
     array2x_www_form_urlencoded : function(pojo){
         resp = "";
@@ -100,13 +115,19 @@ const comtor = {
     form2FormData: function(form){
         return new FormData(form);
     },
-    get_payload: function (content_type,pojo) {  /* POJO could be object , array  */
 
+    get_payload: function (content_type,pojo) {  /* POJO could be object , array  or FormData */
         is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
-        if (is_object && content_type === "x-www-form-urlencode"){
+        is_formdata = pojo instanceof FormData && !Array.isArray(pojo) && pojo !== null;
+        if (is_formdata && content_type === "application/x-www-form-urlencoded"){
+			comtor.log("get_payload is_formdata:"+is_formadata);
+			comtor.log(pojo);
+			return comtor.formdata2x_www_form_urlencoded(pojo);
+		}
+        if (is_object && content_type === "application/x-www-form-urlencoded"){
             return comtor.object2x_www_form_urlencoded(pojo);
         }
-        if (Array.isArray(pojo)   && content_type === "x-www-form-urlencoded" ){
+        if (Array.isArray(pojo)   && content_type === "application/x-www-form-urlencoded" ){
             return comtor.array2x_www_form_urlencoded(pojo);
         }
         if (is_object && content_type === "multipart/form-data"){
@@ -158,6 +179,10 @@ const comtor = {
         }
     },
 
+    /*
+       pojo could be a javascript object or FormData
+ 
+    */ 
     xhr: function(url,pojo = null,xhrparams = {}, evt=null){
         console.log("============ XHR =============");
         console.log(url);
@@ -174,6 +199,7 @@ const comtor = {
         is_null = pojo === null;
         is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
         is_string = typeof pojo === 'string' || pojo instanceof String;
+		is_formdata = typeof pojo === "FormData";
         default_method = "POST";
         if (xhrparams.method){
             default_method = xhrparams.method;

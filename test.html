@@ -12,17 +12,20 @@
   <script src="test.js"></script>
 </head>
 <body>
-
+<!--
+  comtor-enctype="application/json" 
+  comtor-onsubmit-pre="pre"
+  enctype="multipart/form-data" 
+  comtor-onsubmit-prepare="prepare"
+-->
 <div class="container">
   <h1>ComtorJS Test</h1>
-  <form id="myform" action="https://jsonplaceholder.typicode.com/posts/1" method="POST"  enctype="multipart/form-data" 
-  comtor-enctype="application/json" 
-  comtor-onsubmit="default"
-  comtor-onsubmit-prepare="prepare"
-  comtor-onsubmit-pre="pre"
+  <form id="myform" action="https://jsonplaceholder.typicode.com/posts/1" 
+  method="POST"  
+  enctype="application/x-www-form-urlencoded"
   comtor-onsubmit-post-ok="send_ok"
   comtor-onsubmit-post-error="send_fail"
-  
+  comtor-onsubmit="default"
   > 
     <div class="form-group">
         <label for="name">Name:</label>
