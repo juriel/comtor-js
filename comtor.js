@@ -1,5 +1,5 @@
 const comtor = {
-    ENABLE_LOGS  = false,
+    ENABLE_LOGS  : false,
     hello: function () {
         console.log("Hello World");
     },
@@ -168,7 +168,7 @@ const comtor = {
 
         /*   x-www-form-urlencoded */
         if (is_formdata && content_type === "application/x-www-form-urlencoded"){
-			comtor.log("get_payload is_formdata:"+is_formadata);
+			comtor.log("get_payload is_formdata:"+is_formdata);
 			comtor.log(input_obj);
 			return comtor.formdata2x_www_form_urlencoded(input_obj);
 		}
