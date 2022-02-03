@@ -3,7 +3,7 @@ const comtor = {
     hello: function () {
         console.log("Hello World");
     },
-    log function(o){
+    log: function(o){
 		console.log(o);
     },
     function_invoke: function(func, params){
