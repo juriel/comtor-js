@@ -25,7 +25,27 @@ const comtor = {
         else if (func.length == 4){
             return func(params[0],params[1],params[2],params[3]);
         }
-
+    },
+    //Returns true if it is a DOM node
+    isDOMNode: function(o){
+        return (
+            typeof Node === "object" ? o instanceof Node : 
+            o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName==="string"
+        );
+    },
+  
+    //Returns true if it is a DOM element    
+    isDOMElement: function (o){
+        return (
+            typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
+            o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName==="string"
+        );
+    },
+    isHTMLFormElement:  function(o){
+        return (
+            typeof HTMLFormElement === "object" ? o instanceof HTMLFormElement : //DOM2
+            o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName==="string"
+        );
     },
     /*
     Extract from inputs, selects and textareas values to create a object 
@@ -246,18 +266,19 @@ const comtor = {
         comtor.log(url);
         comtor.log(pojo);
         comtor.log(xhrparams);
+        comtor.log(evt);
         comtor.log("------------------------------");
-        if (xhrparams.function_pre){
+        if (xhrparams.function_pre){ // Invokes funtion pre xhr
             pre_pojo = comtor.function_invoke(xhrparams.function_pre,[evt,pojo,xhrparams]);
             if (pre_pojo){
                 pojo  = pre_pojo;
             }
         }
         //console.log("XHR Step 1");
-        is_null = pojo === null;
-        is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
-        is_string = typeof pojo === 'string' || pojo instanceof String;
-		is_formdata = typeof pojo === "FormData";
+        pojo_is_null = pojo === null;
+        pojo_is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
+        pojo_is_string = typeof pojo === 'string' || pojo instanceof String;
+		pojo_is_formdata = pojo instanceof FormData;
         default_method = "POST";
         if (xhrparams.method){
             default_method = xhrparams.method;
@@ -266,14 +287,17 @@ const comtor = {
             content_type = xhrparams.content_type;
         }
         else{ /* select best encoding depending pojo type */
-            if (is_object || Array.isArray(pojo)){  
+            if (pojo_is_formdata){
+                content_type = "multipart/form-data";
+            }
+            else if (pojo_is_object || Array.isArray(pojo)){  
                 content_type = "application/json";
             }
-            else if (is_string){
+            else if (pojo_is_string){
                 content_type = "text/plain";
             }            
         }
-        //console.log("XHR Step 2 "+content_type+" "+default_method);
+        comtor.log("XHR Step 2 "+content_type+" "+default_method);
         var client = new XMLHttpRequest();        
         onloadend_handler = function(){
             //console.log("Handler");
@@ -290,9 +314,14 @@ const comtor = {
             }    
         };        
         client.onloadend = onloadend_handler;
-        if (xhrparams.headers){
+        if (xhrparams.headers && Array.isArray(xhrparams.headers) ){
             for (i = 0; i < params.headers.length ; i = i +2){
                 client.setRequestHeader(params.headers[i],params.headers[i+1]);
+            }
+        }
+        if (xhrparams.headers && typeof xhrparams.headers === "object" ){
+            for (var key in xhrparams.headers){
+                client.setRequestHeader(key,xhrparams.headers[key]);
             }
         }
         if (xhrparams.timeout){
@@ -304,20 +333,22 @@ const comtor = {
         if (xhrparams.withCredentials){
             client.withCredentials = xhrparams.withCredentials;
         }
-       // console.log("XHR Step 3 open ");
-        client.open(default_method, url);
-        client.setRequestHeader("Content-Type", content_type);
+        console.log("XHR Step 3 open "+default_method+" "+url);
         
         
-        if (default_method === "GET" && !is_null){            
-            client.send(comtor.get_payload(content_type, pojo));
+        if (default_method === "GET" || default_method === "DELETE" || default_method === "HEAD"  ){                
+            params = comtor.get_payload("application/x-www-form-urlencoded", pojo);
+            url = url +"?"+params;
+            client.open(default_method, url);            
+            client.send();
         }
-        else {
-            //console.log("XHR Step 4 open "+content_type+" "+pojo);
-           // console.log(comtor.get_payload(content_type,pojo));
-            
+        else if (default_method === "POST" || default_method === "PUT"  ) {
+            client.open(default_method, url);
+            client.setRequestHeader("Content-Type", content_type);
+            comtor.log("XHR Step 4 open "+content_type+" "+pojo);
+            comtor.log(comtor.get_payload(content_type,pojo));            
             client.send(comtor.get_payload(content_type,pojo));
-        }
+        }        
         return client;
     },
     
@@ -414,5 +445,4 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
         }
     );
-
 });
