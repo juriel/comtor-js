@@ -184,11 +184,11 @@ const comtor = {
  
     */ 
     xhr: function(url,pojo = null,xhrparams = {}, evt=null){
-        console.log("============ XHR =============");
-        console.log(url);
-        console.log(pojo);
-        console.log(xhrparams);
-        console.log("------------------------------");
+        comtor.log("============ XHR =============");
+        comtor.log(url);
+        comtor.log(pojo);
+        comtor.log(xhrparams);
+        comtor.log("------------------------------");
         if (xhrparams.function_pre){
             pre_pojo = comtor.function_invoke(xhrparams.function_pre,[evt,pojo,xhrparams]);
             if (pre_pojo){
@@ -292,7 +292,7 @@ const comtor = {
 */       
         //console.log(pojo);
         xhrparams = {};
-        console.log("METHOD "+form.method);
+        comtor.log("METHOD "+form.method);
         if (form.method){
             xhrparams.method = form.method;
         }
