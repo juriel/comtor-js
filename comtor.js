@@ -76,13 +76,19 @@ const comtor = {
     encodeURIComponent2: function(str){
         return encodeURIComponent(str).replace(/%20/g,'+');
     },
+    /*
+    converts js object to application/x-www-form-urlencoded payload
+    */
     object2x_www_form_urlencoded : function(pojo){
-        resp = "";
+        var resp = "";
         for(var key in pojo){
-            resp += (resp?'&':'') + comtor.encodeURIComponent2(key)+"="+comtor.encodeURIComponent2(pojo[key])+"&";
+            resp += (resp?'&':'') + comtor.encodeURIComponent2(key)+"="+comtor.encodeURIComponent2(pojo[key]);
         }
         return resp;
     },
+    /*
+    converts FormData object to application/x-www-form-urlencoded payload
+    */
     formdata2x_www_form_urlencoded : function(formData){
         var resp  = '';
         for(var pair of formData.entries()){
@@ -92,25 +98,34 @@ const comtor = {
         }
         return resp;
     },
+    /*
+    Converts JS array to application/x-www-form-urlencoded payload
+    */
     array2x_www_form_urlencoded : function(pojo){
-        resp = "";
+        var resp = "";
         
         for(i = 0 ; i < pojo.length ; i += 2){
             key = pojo[i];
             value = pojo[i+1];
-            resp += encodeURIComponent(key)+"="+encodeURIComponent(value)+"&";
+            resp += (resp?'&':'') + encodeURIComponent(key)+"="+encodeURIComponent(value);
         }
         return resp;
 
     },
-    object2xFormData: function(pojo){
+    /*
+    Creates a FormData from a JS plain object
+    */
+    object2FormData: function(pojo){
         var resp = new FormData();
         for (var key in pojo){
             resp.append(key,pojo[key]);
         }
         return resp;
     },
-    array2xFormData: function(pojo){
+    /*
+    Creates a FormData from JS array.  ["key1","value1","key2","value2"]
+     */
+    array2FormData: function(pojo){
         var resp = new FormData();
         for(i = 0 ; i < pojo.length ; i += 2){
             key = pojo[i];
@@ -119,34 +134,70 @@ const comtor = {
         }
         return resp;
     },
+    /*
+    Creates a FormData from a form
+    */
     form2FormData: function(form){
         return new FormData(form);
     },
+    /*
+    Creates a JS plain object from formData
+    */
+    formData2object: function(formData){
+        pojo     = {};
+        for(var pair of formData.entries()){
+            if(typeof pair[1]=='string'){
+                key = pair[0];
+                value = pair[1];
+                pojo[key] = value;
+            }
+        }
+        return pojo;
+    },
+    /*
+    Creates a valid payload to use in XHR send method
+    valid input_obj are object, array or FormData
+    */
+    get_payload: function (content_type,input_obj) {
+        if (input_obj == null){
+            return;
+        }  
+        is_array    = Array.isArray(input_obj);
+        is_object   = typeof input_obj === "object"   && !Array.isArray(input_obj) && input_obj !== null;
+        is_formdata = input_obj instanceof FormData && !Array.isArray(input_obj) && input_obj !== null;
 
-    get_payload: function (content_type,pojo) {  /* POJO could be object , array  or FormData */
-        is_object = typeof pojo === "object" && !Array.isArray(pojo) && pojo !== null;
-        is_formdata = pojo instanceof FormData && !Array.isArray(pojo) && pojo !== null;
+        /*   x-www-form-urlencoded */
         if (is_formdata && content_type === "application/x-www-form-urlencoded"){
 			comtor.log("get_payload is_formdata:"+is_formadata);
-			comtor.log(pojo);
-			return comtor.formdata2x_www_form_urlencoded(pojo);
+			comtor.log(input_obj);
+			return comtor.formdata2x_www_form_urlencoded(input_obj);
 		}
         if (is_object && content_type === "application/x-www-form-urlencoded"){
-            return comtor.object2x_www_form_urlencoded(pojo);
+            return comtor.object2x_www_form_urlencoded(input_obj);
         }
-        if (Array.isArray(pojo)   && content_type === "application/x-www-form-urlencoded" ){
-            return comtor.array2x_www_form_urlencoded(pojo);
+        if (Array.isArray(input_obj)   && content_type === "application/x-www-form-urlencoded" ){
+            return comtor.array2x_www_form_urlencoded(input_obj);
+        }
+        /* multipart/form-data */
+        if (is_formdata && content_type === "multipart/form-data"){
+            return input_obj;
         }
         if (is_object && content_type === "multipart/form-data"){
-            return comtor.object2xFormData(pojo);
+            return comtor.object2FormData(input_obj);
         }
-        if (Array.isArray(pojo) && content_type ==="multipart/form-data"){
-            return comtor.array2xFormData(pojo);
+        if (Array.isArray(input_obj) && content_type ==="multipart/form-data"){
+            return comtor.array2FormData(input_obj);
         }
-        if ((is_object ||Array.isArray(pojo))  && content_type === "application/json"){
-            return JSON.stringify(pojo);
+
+        /* application/json */
+        if ((is_object || is_array)  && content_type === "application/json"){
+            return JSON.stringify(input_obj);
         }
-        return "get_payload error  "+content_type+"  "+pojo;
+        if (is_formdata){
+            obj = comtor.formData2object(input_obj);
+            return JSON.stringify(obj);
+        }
+        return "get_payload error  "+content_type+"  "+input_obj;
     },
     http_post_json: function(url,pojo, params  = {},  callback = null, error_callback){
         //console.log("Step1");
