@@ -47,6 +47,79 @@ const comtor = {
             o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName==="string"
         );
     },
+
+
+    _2object: function(o){
+        if ( o === null){
+            return null;
+        }
+        if (comtor.isDOMNode(o)){
+            return comtor.node2object(o);
+        }
+        if (o instanceof FormData){
+            return comtor.formData2object(o);
+        }
+        if (o instanceof Event){
+            form = o.target.form;
+            return comtor.formData2object(comtor.form2FormData(form));
+        }
+        return o;
+    },
+
+    _2formData: function(o){
+        if ( o === null){
+            return new FormData();
+        }
+        if (comtor.isHTMLFormElement(o)){
+            return comtor.form2FormData(o);
+        }
+        if (comtor.isDOMNode(o)){
+            return comtor.form2FormData(o);
+        }
+        if (o instanceof FormData){
+            return o;
+        }
+        if (o instanceof Event){
+            form = o.target.form;
+            return comtor.form2FormData(form);
+        }
+        if (o instanceof Object && !Array.isArray(o)){
+            return comtor.object2FormData(o);
+        }
+        if (Array.isArray(o)){
+            return comtor.array2FormData(o);
+        }
+        return o;   
+    },
+
+
+    _2x_www_form_urlencoded: function(o){
+        if ( o === null){
+            return "";
+        }
+        if (comtor.isHTMLFormElement(o)){
+            return comtor.formData2x_www_form_urlencoded(comtor.form2FormData(o));
+        }
+        if (comtor.isDOMNode(o)){
+            return comtor.formData2x_www_form_urlencoded(comtor.form2FormData(o));
+        }
+        if (o instanceof FormData){
+            return comtor.formData2x_www_form_urlencoded(o);
+        }
+        if (o instanceof Event){
+            form = o.target.form;
+            fd =  comtor.form2FormData(form);
+            return comtor.formData2x_www_form_urlencoded(fd);
+        }
+        if (o instanceof Object && !Array.isArray(o)){
+            return comtor.object2x_www_form_urlencoded(o);
+        }
+        if (Array.isArray(o)){
+            return comtor.array2x_www_form_urlencoded(o);
+        }
+        return o;   
+
+    },
     /*
     Extract from inputs, selects and textareas values to create a object 
     node:  node is DOM element
@@ -109,7 +182,7 @@ const comtor = {
     /*
     converts FormData object to application/x-www-form-urlencoded payload
     */
-    formdata2x_www_form_urlencoded : function(formData){
+    formData2x_www_form_urlencoded : function(formData){
         var resp  = '';
         for(var pair of formData.entries()){
             if(typeof pair[1]=='string'){
@@ -190,7 +263,7 @@ const comtor = {
         if (is_formdata && content_type === "application/x-www-form-urlencoded"){
 			comtor.log("get_payload is_formdata:"+is_formdata);
 			comtor.log(input_obj);
-			return comtor.formdata2x_www_form_urlencoded(input_obj);
+			return comtor.formData2x_www_form_urlencoded(input_obj);
 		}
         if (is_object && content_type === "application/x-www-form-urlencoded"){
             return comtor.object2x_www_form_urlencoded(input_obj);
