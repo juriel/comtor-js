@@ -37,13 +37,18 @@ const comtor = {
     //Returns true if it is a DOM element    
     isDOMElement: function (o){
         return (
-            typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
+            (typeof HTMLFormElement === "object" || typeof HTMLFormElement === "function") ? o instanceof Node : //DOM2
             o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName==="string"
         );
     },
     isHTMLFormElement:  function(o){
+        console.log(" ----> "+(typeof HTMLFormElement));
+        console.log("  typeof HTMLFormElement === object ", (typeof HTMLFormElement === "object"));
+
+        console.log(" o instanceof HTMLFormElement ", (o instanceof HTMLFormElement));
+        console.log(" o .nodetype ", o.nodeType);
         return (
-            typeof HTMLFormElement === "object" ? o instanceof HTMLFormElement : //DOM2
+            (typeof HTMLFormElement === "object" || typeof HTMLFormElement === "function") ? o instanceof HTMLFormElement : //DOM2
             o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName==="string"
         );
     },
@@ -63,6 +68,17 @@ const comtor = {
             form = o.target.form;
             return comtor.formData2object(comtor.form2FormData(form));
         }
+        if (Array.isArray(o)){
+            return o;
+        }
+        if (typeof o === "string"){
+            try{
+                obj = JSON.parse(o);
+                return obj;
+            }
+            catch(ex){                
+            }
+        }
         return o;
     },
 
@@ -74,7 +90,7 @@ const comtor = {
             return comtor.form2FormData(o);
         }
         if (comtor.isDOMNode(o)){
-            return comtor.form2FormData(o);
+            return comtor.node2formData(o);
         }
         if (o instanceof FormData){
             return o;
@@ -101,7 +117,7 @@ const comtor = {
             return comtor.formData2x_www_form_urlencoded(comtor.form2FormData(o));
         }
         if (comtor.isDOMNode(o)){
-            return comtor.formData2x_www_form_urlencoded(comtor.form2FormData(o));
+            return comtor.formData2x_www_form_urlencoded(comtor.node2formData(o));
         }
         if (o instanceof FormData){
             return comtor.formData2x_www_form_urlencoded(o);
@@ -120,12 +136,8 @@ const comtor = {
         return o;   
 
     },
-    /*
-    Extract from inputs, selects and textareas values to create a object 
-    node:  node is DOM element
-    */
-    node2object: function (node) {  
-        pojo     = {};
+
+    node2elementArray: function(node){
         elements = [];
         inputs   = node.getElementsByTagName("input");
         selects  = node.getElementsByTagName("select");
@@ -139,6 +151,15 @@ const comtor = {
         for (const ele of texareas) {
             elements.push(ele);
         }
+        return elements;
+    },
+    /*
+    Extract from inputs, selects and textareas values to create a object 
+    node:  node is DOM element
+    */
+    node2object: function (node) {  
+        pojo     = {};
+        elements = comtor.node2elementArray(node);
         for (const ele of elements) {
             
             if (ele.type != "submit") {
@@ -148,6 +169,27 @@ const comtor = {
                     }
                     else if (ele.id) {
                         pojo[ele.id] = ele.value;
+                    }
+                }
+            }
+        }
+        return pojo;
+    },
+    /*
+    Extract from inputs, selects and textareas values to create a object 
+    node:  node is DOM element
+    */
+    node2formData: function (node) {  
+        formData     = new FormData();        
+        elements = comtor.node2elementArray(node);
+        for (const ele of elements) {
+            if (ele.type != "submit") {
+                if (!ele.disabled) {
+                    if (ele.name) {
+                        formData.append(ele.name, ele.value);
+                    }
+                    else if (ele.id) {
+                        formData.append(ele.id, ele.value);                        
                     }
                 }
             }
