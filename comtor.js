@@ -448,22 +448,25 @@ const comtor = {
         if (xhrparams.withCredentials){
             client.withCredentials = xhrparams.withCredentials;
         }
-        console.log("XHR Step 3 open "+default_method+" "+url);
         
         
-        if (default_method === "GET" || default_method === "DELETE" || default_method === "HEAD"  ){                
+        
+        if (default_method.toUpperCase() === "GET" || default_method.toUpperCase() === "DELETE" || default_method.toUpperCase() === "HEAD"  ){                
             params = comtor.get_payload("application/x-www-form-urlencoded", pojo);
             url = url +"?"+params;
             client.open(default_method, url);            
             client.send();
         }
-        else if (default_method === "POST" || default_method === "PUT"  ) {
+        else if (default_method.toUpperCase() === "POST" || default_method.toUpperCase() === "PUT"  ) {            
             client.open(default_method, url);
             client.setRequestHeader("Content-Type", content_type);
             comtor.log("XHR Step 4 open "+content_type+" "+pojo);
             comtor.log(comtor.get_payload(content_type,pojo));            
             client.send(comtor.get_payload(content_type,pojo));
         }        
+        else {
+            console.log("XHR Step 3.3 open "+default_method+" "+url);
+        }
         return client;
     },
     
